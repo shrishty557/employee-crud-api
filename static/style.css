@@ -1,0 +1,31 @@
+:root { font-family: Inter, Segoe UI, Arial, sans-serif; color: #202638; background: #f4f6fb; }
+* { box-sizing: border-box; }
+body { margin: 0; }
+.container { width: min(1100px, 92%); margin: 42px auto; }
+header { margin-bottom: 26px; }
+.eyebrow { color: #5365d8; font-weight: 800; letter-spacing: .12em; font-size: .75rem; }
+h1 { font-size: clamp(2rem, 5vw, 3rem); margin: 8px 0; }
+h2 { margin: 0 0 16px; font-size: 1.2rem; }
+.subheading { color: #697187; margin: 4px 0 0; }
+.panel { background: white; border: 1px solid #e4e8f2; border-radius: 16px; padding: 24px; margin: 18px 0; box-shadow: 0 8px 28px #1e2a4610; }
+form { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+label { display: grid; gap: 8px; font-size: .9rem; font-weight: 650; }
+input { width: 100%; padding: 12px; border: 1px solid #d8ddec; border-radius: 9px; font: inherit; }
+input:focus { outline: 2px solid #c5cbff; border-color: #6875e8; }
+.actions { display: flex; gap: 10px; align-items: end; }
+button { border: 0; border-radius: 9px; padding: 11px 15px; background: #4f5ed7; color: white; font-weight: 700; cursor: pointer; }
+button:hover { filter: brightness(.95); }
+button.secondary { color: #30384d; background: #edf0f7; }
+.table-heading { display: flex; justify-content: space-between; align-items: center; gap: 14px; margin-bottom: 18px; }
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; text-align: left; }
+th, td { padding: 13px 12px; border-bottom: 1px solid #edf0f6; white-space: nowrap; }
+th { font-size: .8rem; text-transform: uppercase; letter-spacing: .04em; color: #6c7488; }
+td { font-size: .92rem; }
+td button { padding: 7px 10px; margin-right: 5px; }
+.delete-button { background: #b63e50; }
+#message { min-height: 1.2em; margin-bottom: 0; color: #276749; }
+#message.error { color: #b42336; }
+.hidden { display: none; }
+footer { text-align: center; color: #7b8293; padding: 16px; font-size: .85rem; }
+@media (max-width: 760px) { .container { margin: 22px auto; } form { grid-template-columns: 1fr; } .panel { padding: 17px; } .table-heading { align-items: flex-start; } }

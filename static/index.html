@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Employee Management</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <main class="container">
+    <header>
+      <p class="eyebrow">DEMO PROJECT · CRUD API</p>
+      <h1>Employee Management</h1>
+      <p class="subheading">Add, view, edit and remove employee records stored in SQL Server.</p>
+    </header>
+
+    <section class="panel">
+      <h2 id="form-title">Add an employee</h2>
+      <form id="employee-form">
+        <input type="hidden" id="employee-id">
+        <label>Name<input id="name" name="name" maxlength="100" required placeholder="e.g. Aditi Sharma"></label>
+        <label>Email<input id="email" name="email" type="email" maxlength="255" required placeholder="e.g. aditi@example.com"></label>
+        <label>Department<input id="department" name="department" maxlength="100" required placeholder="e.g. IT"></label>
+        <div class="actions">
+          <button type="submit" id="save-button">Add employee</button>
+          <button type="button" id="cancel-button" class="secondary hidden">Cancel edit</button>
+        </div>
+      </form>
+      <p id="message" role="status" aria-live="polite"></p>
+    </section>
+
+    <section class="panel">
+      <div class="table-heading">
+        <div><h2>Employees</h2><p class="subheading">These records come from the database through the API.</p></div>
+        <button type="button" id="refresh-button" class="secondary">Refresh</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>ID</th><th>Name</th><th>Email</th><th>Department</th><th>Actions</th></tr></thead>
+          <tbody id="employees-body"><tr><td colspan="5">Loading employees…</td></tr></tbody>
+        </table>
+      </div>
+    </section>
+    <footer>Frontend → FastAPI → SQL Server</footer>
+  </main>
+  <script src="/static/app.js"></script>
+</body>
+</html>
