@@ -1,114 +1,296 @@
-const form = document.querySelector('#employee-form');
-const idInput = document.querySelector('#employee-id');
-const nameInput = document.querySelector('#name');
-const emailInput = document.querySelector('#email');
-const departmentInput = document.querySelector('#department');
-const tbody = document.querySelector('#employees-body');
-const message = document.querySelector('#message');
-const saveButton = document.querySelector('#save-button');
-const cancelButton = document.querySelector('#cancel-button');
+// EmployeeHub - Frontend JavaScript
 
-function showMessage(text, isError = false) {
-  message.textContent = text;
-  message.classList.toggle('error', isError);
+const API_URL = "/api/employees";
+
+let employees = [];
+
+// Get HTML elements
+const employeeTableBody = document.getElementById("employeeTableBody");
+const searchInput = document.getElementById("searchInput");
+const addEmployeeBtn = document.getElementById("addEmployeeBtn");
+const addEmployeeForm = document.getElementById("addEmployeeForm");
+const employeeForm = document.getElementById("employeeForm");
+const cancelEmployeeBtn = document.getElementById("cancelEmployeeBtn");
+const formMessage = document.getElementById("formMessage");
+const themeToggleBtn = document.getElementById("themeToggleBtn");
+
+// Get employee details safely
+function getEmployeeId(employee) {
+    return employee.employee_id ?? employee.id ?? "";
 }
 
-async function api(url, options = {}) {
-  const response = await fetch(url, {
-    ...options,
-    headers: { 'Content-Type': 'application/json', ...(options.headers || {}) },
-  });
-  const text = await response.text();
-  let data = null;
-  try { data = text ? JSON.parse(text) : null; } catch { data = text; }
-  if (!response.ok) {
-    const detail = data && data.detail ? data.detail : `Request failed (${response.status})`;
-    throw new Error(detail);
-  }
-  return data;
+function getEmployeeName(employee) {
+    return employee.name ?? employee.full_name ?? "";
 }
 
-async function loadEmployees() {
-  tbody.innerHTML = '<tr><td colspan="5">Loading employees…</td></tr>';
-  try {
-    const employees = await api('/api/employees');
-    tbody.replaceChildren();
-    if (!employees.length) {
-      tbody.innerHTML = '<tr><td colspan="5">No employees yet. Add one above.</td></tr>';
-      return;
+function getEmployeeEmail(employee) {
+    return employee.email ?? "";
+}
+
+function getEmployeeDepartment(employee) {
+    return employee.department ?? "";
+}
+
+function getEmployeeCreatedAt(employee) {
+    const date = employee.created_at ?? employee.createdAt ?? "";
+    if (!date) return "";
+
+    const parsedDate = new Date(date);
+
+    return isNaN(parsedDate.getTime())
+        ? String(date)
+        : parsedDate.toLocaleDateString();
+}
+
+// Display employees in the table
+function renderEmployees(list) {
+    if (!employeeTableBody) return;
+
+    employeeTableBody.innerHTML = "";
+
+    if (!list.length) {
+        employeeTableBody.innerHTML =
+            '<tr><td colspan="10">No employees found.</td></tr>';
+        return;
     }
-    for (const employee of employees) {
-      const tr = document.createElement('tr');
-      for (const value of [employee.id, employee.name, employee.email, employee.department]) {
-        const td = document.createElement('td');
-        td.textContent = value;
-        tr.appendChild(td);
-      }
-      const actionCell = document.createElement('td');
-      const edit = document.createElement('button');
-      edit.type = 'button'; edit.textContent = 'Edit';
-      edit.addEventListener('click', () => startEdit(employee));
-      const remove = document.createElement('button');
-      remove.type = 'button'; remove.textContent = 'Delete'; remove.className = 'delete-button';
-      remove.addEventListener('click', () => deleteEmployee(employee.id));
-      actionCell.append(edit, remove);
-      tr.appendChild(actionCell);
-      tbody.appendChild(tr);
-    }
-  } catch (error) {
-    tbody.innerHTML = '<tr><td colspan="5">Could not load employees. Check that the API and database are running.</td></tr>';
-    showMessage(error.message, true);
-  }
-}
 
-function resetForm() {
-  form.reset();
-  idInput.value = '';
-  document.querySelector('#form-title').textContent = 'Add an employee';
-  saveButton.textContent = 'Add employee';
-  cancelButton.classList.add('hidden');
-}
+    list.forEach((employee) => {
+        const row = document.createElement("tr");
 
-function startEdit(employee) {
-  idInput.value = employee.id;
-  nameInput.value = employee.name;
-  emailInput.value = employee.email;
-  departmentInput.value = employee.department;
-  document.querySelector('#form-title').textContent = `Edit employee #${employee.id}`;
-  saveButton.textContent = 'Save changes';
-  cancelButton.classList.remove('hidden');
-  showMessage('Editing employee ' + employee.id);
-  nameInput.focus();
-}
+        const values = [
+            getEmployeeId(employee),
+            getEmployeeName(employee),
+            getEmployeeEmail(employee),
+            getEmployeeDepartment(employee),
+            getEmployeeCreatedAt(employee)
+        ];
 
-form.addEventListener('submit', async (event) => {
-  event.preventDefault();
-  const employee = {
-    name: nameInput.value.trim(),
-    email: emailInput.value.trim(),
-    department: departmentInput.value.trim(),
-  };
-  const id = idInput.value;
-  try {
-    const result = await api(id ? `/api/employees/${id}` : '/api/employees', {
-      method: id ? 'PUT' : 'POST',
-      body: JSON.stringify(employee),
+        // Match the number of cells to the table headings
+        const headings = document.querySelectorAll("thead th");
+
+        headings.forEach((heading, index) => {
+            const cell = document.createElement("td");
+            const headingText = heading.textContent.trim().toLowerCase();
+
+            if (headingText.includes("action")) {
+                cell.textContent = "—";
+            } else if (
+                headingText.includes("email")
+            ) {
+                cell.textContent = getEmployeeEmail(employee);
+            } else if (
+                headingText.includes("department")
+            ) {
+                cell.textContent = getEmployeeDepartment(employee);
+            } else if (
+                headingText.includes("created") ||
+                headingText.includes("date")
+            ) {
+                cell.textContent = getEmployeeCreatedAt(employee);
+            } else {
+                cell.textContent = values[index] ?? "";
+            }
+
+            row.appendChild(cell);
+        });
+
+        employeeTableBody.appendChild(row);
     });
-    showMessage(id ? 'Employee updated successfully.' : `Employee added successfully (ID ${result.id}).`);
-    resetForm();
-    await loadEmployees();
-  } catch (error) { showMessage(error.message, true); }
-});
-
-async function deleteEmployee(id) {
-  if (!window.confirm(`Delete employee #${id}? This will remove the record from SQL Server.`)) return;
-  try {
-    const result = await api(`/api/employees/${id}`, { method: 'DELETE' });
-    showMessage(result.message);
-    await loadEmployees();
-  } catch (error) { showMessage(error.message, true); }
 }
 
-cancelButton.addEventListener('click', resetForm);
-document.querySelector('#refresh-button').addEventListener('click', loadEmployees);
+// Load employees from the backend
+async function loadEmployees() {
+    if (!employeeTableBody) return;
+
+    employeeTableBody.innerHTML =
+        '<tr><td colspan="10">Loading employees...</td></tr>';
+
+    try {
+        const response = await fetch(API_URL);
+
+        if (!response.ok) {
+            throw new Error("Could not load employees.");
+        }
+
+        const data = await response.json();
+
+        employees = Array.isArray(data)
+            ? data
+            : data.employees ?? [];
+            // Update dashboard statistics
+document.getElementById("totalEmployees").textContent =
+    employees.length;
+
+document.getElementById("totalDepartments").textContent =
+    new Set(
+        employees
+            .map(employee => getEmployeeDepartment(employee))
+            .filter(Boolean)
+    ).size;
+
+document.getElementById("dashboardStatus").textContent = "Active";
+
+        renderEmployees(employees);
+
+    } catch (error) {
+        console.error("Loading error:", error);
+
+        employeeTableBody.innerHTML =
+            '<tr><td colspan="10">Unable to load employees. Please check the server.</td></tr>';
+    }
+}
+
+// Search employees
+function filterEmployees() {
+    if (!searchInput) return;
+
+    const query = searchInput.value.trim().toLowerCase();
+
+    const filteredEmployees = employees.filter((employee) => {
+        return [
+            getEmployeeId(employee),
+            getEmployeeName(employee),
+            getEmployeeEmail(employee),
+            getEmployeeDepartment(employee)
+        ].some((value) =>
+            String(value).toLowerCase().includes(query)
+        );
+    });
+
+    renderEmployees(filteredEmployees);
+}
+
+if (searchInput) {
+    searchInput.addEventListener("input", filterEmployees);
+}
+
+// Open Add Employee form
+if (addEmployeeBtn && addEmployeeForm) {
+    addEmployeeBtn.addEventListener("click", () => {
+        addEmployeeForm.hidden = false;
+
+        if (employeeForm) {
+            employeeForm.reset();
+        }
+
+        if (formMessage) {
+            formMessage.textContent = "";
+        }
+
+        document.getElementById("employeeName")?.focus();
+    });
+}
+
+// Close Add Employee form
+if (cancelEmployeeBtn && addEmployeeForm) {
+    cancelEmployeeBtn.addEventListener("click", () => {
+        addEmployeeForm.hidden = true;
+
+        if (employeeForm) {
+            employeeForm.reset();
+        }
+
+        if (formMessage) {
+            formMessage.textContent = "";
+        }
+    });
+}
+
+// Add a new employee
+if (employeeForm) {
+    employeeForm.addEventListener("submit", async (event) => {
+        event.preventDefault();
+
+        const employee = {
+            name: document.getElementById("employeeName")?.value.trim(),
+            email: document.getElementById("employeeEmail")?.value.trim(),
+            department: document.getElementById("employeeDepartment")?.value.trim()
+        };
+
+        if (formMessage) {
+            formMessage.textContent = "Saving employee...";
+        }
+
+        try {
+            const response = await fetch(API_URL, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(employee)
+            });
+
+            const result = await response.json();
+
+            if (!response.ok) {
+                throw new Error(
+                    result.detail || "Could not add employee."
+                );
+            }
+
+            employeeForm.reset();
+
+            if (addEmployeeForm) {
+                addEmployeeForm.hidden = true;
+            }
+
+            if (formMessage) {
+                formMessage.textContent = "";
+            }
+
+            await loadEmployees();
+
+            alert("Employee added successfully!");
+
+        } catch (error) {
+            console.error("Add employee error:", error);
+
+            if (formMessage) {
+                formMessage.textContent = error.message;
+            }
+        }
+    });
+}
+
+// Dark / Light mode
+function updateThemeButton() {
+    if (!themeToggleBtn) return;
+
+    const isDarkMode =
+        document.body.classList.contains("dark-mode");
+
+    themeToggleBtn.textContent = isDarkMode
+        ? "☀️ Light mode"
+        : "🌙 Dark mode";
+}
+
+// Apply saved theme
+const savedTheme = localStorage.getItem("employeeHubTheme");
+
+if (savedTheme === "dark") {
+    document.body.classList.add("dark-mode");
+} else {
+    document.body.classList.remove("dark-mode");
+}
+
+updateThemeButton();
+
+// Toggle theme
+if (themeToggleBtn) {
+    themeToggleBtn.addEventListener("click", () => {
+        document.body.classList.toggle("dark-mode");
+
+        const isDarkMode =
+            document.body.classList.contains("dark-mode");
+
+        localStorage.setItem(
+            "employeeHubTheme",
+            isDarkMode ? "dark" : "light"
+        );
+
+        updateThemeButton();
+    });
+}
+
+// Start the dashboard
 loadEmployees();

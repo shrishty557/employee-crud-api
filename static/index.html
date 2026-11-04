@@ -1,48 +1,153 @@
-<!doctype html>
+
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Employee Management</title>
-  <link rel="stylesheet" href="/static/style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EmployeeHub | Employee Management</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <script src="/static/app.js" defer></script>
 </head>
+
 <body>
-  <main class="container">
-    <header>
-      <p class="eyebrow">DEMO PROJECT · CRUD API</p>
-      <h1>Employee Management</h1>
-      <p class="subheading">Add, view, edit and remove employee records stored in SQL Server.</p>
-    </header>
 
-    <section class="panel">
-      <h2 id="form-title">Add an employee</h2>
-      <form id="employee-form">
-        <input type="hidden" id="employee-id">
-        <label>Name<input id="name" name="name" maxlength="100" required placeholder="e.g. Aditi Sharma"></label>
-        <label>Email<input id="email" name="email" type="email" maxlength="255" required placeholder="e.g. aditi@example.com"></label>
-        <label>Department<input id="department" name="department" maxlength="100" required placeholder="e.g. IT"></label>
-        <div class="actions">
-          <button type="submit" id="save-button">Add employee</button>
-          <button type="button" id="cancel-button" class="secondary hidden">Cancel edit</button>
-        </div>
-      </form>
-      <p id="message" role="status" aria-live="polite"></p>
-    </section>
+    <main class="container">
 
-    <section class="panel">
-      <div class="table-heading">
-        <div><h2>Employees</h2><p class="subheading">These records come from the database through the API.</p></div>
-        <button type="button" id="refresh-button" class="secondary">Refresh</button>
-      </div>
-      <div class="table-wrap">
-        <table>
-          <thead><tr><th>ID</th><th>Name</th><th>Email</th><th>Department</th><th>Actions</th></tr></thead>
-          <tbody id="employees-body"><tr><td colspan="5">Loading employees…</td></tr></tbody>
-        </table>
-      </div>
-    </section>
-    <footer>Frontend → FastAPI → SQL Server</footer>
-  </main>
-  <script src="/static/app.js"></script>
+        <!-- HEADER -->
+        <header class="topbar">
+            <div>
+                <h1>EmployeeHub</h1>
+                <p>Employee Management Dashboard</p>
+            </div>
+
+            <div class="topbar-actions">
+                <button
+                    type="button"
+                    id="themeToggleBtn"
+                    class="secondary-btn">
+                    🌙 Dark mode
+                </button>
+
+                <button
+                    type="button"
+                    id="addEmployeeBtn"
+                    class="primary-btn">
+                    + Add Employee
+                </button>
+            </div>
+        </header>
+
+        <!-- DASHBOARD STATISTICS -->
+        <section class="stats-container">
+
+            <div class="stat-card">
+                <h3>Total Employees</h3>
+                <div class="stat-number" id="totalEmployees">0</div>
+            </div>
+
+            <div class="stat-card">
+                <h3>Departments</h3>
+                <div class="stat-number" id="totalDepartments">0</div>
+            </div>
+
+            <div class="stat-card">
+                <h3>Dashboard Status</h3>
+                <div class="stat-number" id="dashboardStatus">Active</div>
+            </div>
+
+        </section>
+
+        <!-- ADD EMPLOYEE FORM -->
+        <section class="panel" id="addEmployeeForm" hidden>
+
+            <h2>Add New Employee</h2>
+
+            <form id="employeeForm">
+
+                <label for="employeeName">Full Name</label>
+                <input
+                    type="text"
+                    id="employeeName"
+                    name="name"
+                    placeholder="Enter employee name"
+                    required>
+
+                <label for="employeeEmail">Email Address</label>
+                <input
+                    type="email"
+                    id="employeeEmail"
+                    name="email"
+                    placeholder="Enter email address"
+                    required>
+
+                <label for="employeeDepartment">Department</label>
+                <input
+                    type="text"
+                    id="employeeDepartment"
+                    name="department"
+                    placeholder="Enter department"
+                    required>
+
+                <div class="form-buttons">
+                    <button type="submit" class="primary-btn">
+                        Save Employee
+                    </button>
+
+                    <button
+                        type="button"
+                        id="cancelEmployeeBtn"
+                        class="secondary-btn">
+                        Cancel
+                    </button>
+                </div>
+
+                <p id="formMessage" role="status"></p>
+
+            </form>
+        </section>
+
+        <!-- EMPLOYEE RECORDS -->
+        <section class="panel">
+
+            <h2>Employee Records</h2>
+
+            <div class="search-container">
+                <input
+                    type="search"
+                    id="searchInput"
+                    placeholder="Search by name, ID, email or department...">
+            </div>
+
+            <div class="table-container">
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Full Name</th>
+                            <th>Email Address</th>
+                            <th>Department</th>
+                            <th>Created At</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+
+                    <tbody id="employeeTableBody">
+                        <tr>
+                            <td colspan="6">Loading employees...</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+            </div>
+
+            <p id="statusMessage" class="status">
+                Connecting to employee database...
+            </p>
+
+        </section>
+
+    </main>
+
 </body>
 </html>
